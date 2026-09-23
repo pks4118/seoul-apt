@@ -1,0 +1,412 @@
+<meta charset="utf-8">
+<title>서울 아파트 조건 탐색</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F5F6F8; --panel:#FFFFFF; --ink:#1B2430; --muted:#66707F; --line:#DDE2EA; --line2:#EEF1F5;
+  --accent:#2F4B7C; --accent-ink:#FFFFFF; --soft:#E8EEF7;
+  --gA:#2E7D5B; --gAbg:#E3F3EB; --gB:#A66F0F; --gBbg:#FBF0D6; --gC:#B9542B; --gCbg:#FBE6DC;
+  --thumb:#2F4B7C; --track:#D6DCE6; --shadow:0 1px 2px rgba(20,30,50,.06),0 6px 20px rgba(20,30,50,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161C; --panel:#1B2129; --ink:#E7EBF1; --muted:#9AA5B5; --line:#2C3542; --line2:#242C36;
+  --accent:#8FB0E8; --accent-ink:#0F1520; --soft:#22304A;
+  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418;
+  --thumb:#8FB0E8; --track:#333D4B; --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#12161C; --panel:#1B2129; --ink:#E7EBF1; --muted:#9AA5B5; --line:#2C3542; --line2:#242C36;
+  --accent:#8FB0E8; --accent-ink:#0F1520; --soft:#22304A;
+  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418;
+  --thumb:#8FB0E8; --track:#333D4B; --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:14px;line-height:1.5}
+.num{font-family:"IBM Plex Mono","IBM Plex Sans KR",monospace;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent)}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:16px;padding-block:0 40px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:12px}
+h1{font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+.asof{color:var(--muted);font-size:12.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.asof b{color:var(--ink);font-weight:600}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start;margin-top:18px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);max-height:calc(100vh - 90px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px 18px}
+@media (max-width:900px){aside{position:static;max-height:none}}
+aside details.mob>summary{display:none}
+@media (max-width:900px){aside details.mob>summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;list-style:none;padding:2px 0}aside details.mob>summary::-webkit-details-marker{display:none}aside details.mob>summary::after{content:"펼치기";color:var(--muted);font-weight:500;font-size:12.5px}aside details.mob[open]>summary::after{content:"접기"}}
+.fh{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 6px}
+.fh:first-of-type{margin-top:6px}
+.fh h3{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+.f{margin:10px 0}
+.f label.t{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:4px}
+.f label.t .v{font-weight:600;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:13px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--track);border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:var(--track);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--thumb);border:2px solid var(--panel);margin-top:-7px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--thumb);border:2px solid var(--panel)}
+.dual{position:relative;height:22px}
+.dual input{position:absolute;left:0;top:0;pointer-events:none}
+.dual input::-webkit-slider-thumb{pointer-events:auto}
+.dual input::-moz-range-thumb{pointer-events:auto}
+.dual input.hi::-webkit-slider-runnable-track{background:transparent}
+.dual input.hi::-moz-range-track{background:transparent}
+.dual .fill{position:absolute;top:9px;height:4px;background:var(--accent);border-radius:2px;pointer-events:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.small{font-size:12px;color:var(--muted)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.tier{display:flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}
+.tier input[type=number]{width:50px;padding:4px 5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);text-align:right;font-size:13px}
+.tiers{display:flex;flex-wrap:wrap;gap:8px 14px}
+.g{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;font-weight:700;font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.02em}
+.g.A{background:var(--gAbg);color:var(--gA)}.g.B{background:var(--gBbg);color:var(--gB)}.g.C{background:var(--gCbg);color:var(--gC)}
+.g.x{background:var(--line2);color:var(--muted)}
+.gus{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.gus button{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:2px 9px;font-size:12px}
+.gus button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile .k{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.tile .n{font-size:22px;font-weight:600;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
+.tile .n small{font-size:12px;color:var(--muted);font-family:"IBM Plex Sans KR",sans-serif;margin-left:4px;font-weight:400}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 10px;font-size:13px;color:var(--muted)}
+.toolbar select{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:4px 8px;font-size:13px}
+.list{display:flex;flex-direction:column;gap:8px}
+.cx{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cx>summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center}
+.cx>summary::-webkit-details-marker{display:none}
+.cx>summary:hover{background:var(--line2)}
+.cx .grades{display:flex;gap:4px;flex-wrap:wrap;min-width:64px}
+.cx .name{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.cx .name small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:6px}
+.cx .meta{grid-column:2/4;color:var(--muted);font-size:12.5px;display:flex;flex-wrap:wrap;gap:2px 12px}
+.cx .meta b{color:var(--ink);font-weight:500}
+.cx .price{text-align:right;white-space:nowrap}
+.cx .price .p{font-weight:600;font-size:15px;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.cx .price .c{font-size:12px;color:var(--muted)}
+.det{border-top:1px solid var(--line);padding:12px 14px 16px;display:grid;gap:14px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 18px;font-size:13px}
+.kv div{display:flex;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line2)}
+.kv div span:first-child{color:var(--muted);flex:0 0 110px}
+.kv div span:last-child{flex:1;min-width:0}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:12.5px;width:100%;min-width:900px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;letter-spacing:.04em;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line2);vertical-align:top;white-space:nowrap}
+td.wrap{white-space:normal;min-width:220px}
+td.r,th.r{text-align:right}
+.more{margin:14px auto 0;display:block}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:12px}
+.note{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 16px}
+.note summary{cursor:pointer;font-weight:600;padding:8px 0}
+.note dl{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13px;margin:6px 0 12px}
+.note dt{color:var(--muted)}
+.note dd{margin:0}
+@media (max-width:600px){.note dl{grid-template-columns:1fr}.note dt{margin-top:6px}}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+<header class="top"><div class="wrap">
+  <h1>서울 아파트 조건 탐색</h1>
+  <div class="asof">자료 기준 <b id="asof">불러오는 중…</b><span id="asofSub"></span></div>
+  <div class="spacer"></div>
+  <button class="btn" id="btnReset" type="button">처음 조건으로</button>
+  <button class="btn primary" id="btnUpdate" type="button">최신 자료 불러오기</button>
+</div></header>
+
+<div class="wrap">
+<div class="layout">
+<aside><details class="mob" id="filtersBox" open><summary>조건 설정</summary>
+  <div class="fh"><h3>가격 · 면적</h3></div>
+  <div class="f">
+    <label class="t"><span>매매가</span><span class="v" id="vPrice"></span></label>
+    <div class="dual"><div class="fill" id="fPrice"></div>
+      <input type="range" id="pmin" min="10000" max="150000" step="1000" aria-label="매매가 최소">
+      <input type="range" id="pmax" class="hi" min="10000" max="150000" step="1000" aria-label="매매가 최대"></div>
+  </div>
+  <div class="f">
+    <label class="t"><span>전용면적</span><span class="v" id="vArea"></span></label>
+    <div class="dual"><div class="fill" id="fArea"></div>
+      <input type="range" id="amin" min="20" max="200" step="1" aria-label="전용면적 최소">
+      <input type="range" id="amax" class="hi" min="20" max="200" step="1" aria-label="전용면적 최대"></div>
+  </div>
+  <div class="f tiers">
+    <div class="tier"><span class="g" style="background:var(--line2);color:var(--ink)">-1</span><input type="number" id="t1" min="20" max="200" step="1" aria-label="면적등급 1 기준">㎡ 이상</div>
+    <div class="tier"><span class="g" style="background:var(--line2);color:var(--ink)">-2</span><input type="number" id="t2" min="20" max="200" step="1" aria-label="면적등급 2 기준">㎡ 이상</div>
+  </div>
+  <div class="f row2">
+    <div><label class="t"><span>방</span><span class="v" id="vRoom"></span></label><input type="range" id="room" min="1" max="5" step="1"></div>
+    <div><label class="t"><span>욕실</span><span class="v" id="vBath"></span></label><input type="range" id="bath" min="1" max="4" step="1"></div>
+  </div>
+  <label class="chk"><input type="checkbox" id="stair"> 계단식만</label>
+
+  <div class="fh"><h3>3역 접근 등급</h3><span class="small">강남역·광화문역·여의도역 모두</span></div>
+  <div class="f tiers">
+    <div class="tier"><span class="g A">A</span><input type="number" id="gA" min="10" max="120" aria-label="A등급 상한">분</div>
+    <div class="tier"><span class="g B">B</span><input type="number" id="gB" min="10" max="120" aria-label="B등급 상한">분</div>
+    <div class="tier"><span class="g C">C</span><input type="number" id="gC" min="10" max="120" aria-label="C등급 상한">분</div>
+  </div>
+  <div class="f" style="display:flex;gap:14px">
+    <label class="chk"><input type="checkbox" id="incA"> A 포함</label>
+    <label class="chk"><input type="checkbox" id="incB"> B 포함</label>
+    <label class="chk"><input type="checkbox" id="incC"> C 포함</label>
+  </div>
+  <div class="small">총 소요 = 단지→역 도보 + 대기 3분 + 지하철(환승 4분). 아래 역 도보 상한 안의 역만 이용.</div>
+
+  <div class="fh"><h3>입지</h3></div>
+  <div class="f"><label class="t"><span>지하철역 도보</span><span class="v" id="vWalk"></span></label><input type="range" id="walk" min="3" max="20" step="1"></div>
+  <div class="f row2">
+    <div><label class="t"><span>초등학교 도보</span><span class="v" id="vElem"></span></label><input type="range" id="elem" min="3" max="21" step="1"></div>
+    <div><label class="t"><span>중학교 도보</span><span class="v" id="vMid"></span></label><input type="range" id="mid" min="3" max="21" step="1"></div>
+  </div>
+  <label class="chk"><input type="checkbox" id="green"> 주변 녹지 필수 <span class="small">(500m 안 5천㎡ 공원 또는 1km 안 대형녹지)</span></label>
+
+  <div class="fh"><h3>단지</h3></div>
+  <div class="f row2">
+    <div><label class="t"><span>세대수</span><span class="v" id="vHh"></span></label><input type="range" id="hh" min="100" max="2000" step="50"></div>
+    <div><label class="t"><span>입주 연차</span><span class="v" id="vAge"></span></label><input type="range" id="age" min="1" max="36" step="1"></div>
+  </div>
+  <div class="f"><label class="t"><span>구</span><span class="small" id="vGu">전체</span></label><div class="gus" id="gus"></div></div>
+  <label class="chk"><input type="checkbox" id="showEmpty"> 조건 매물이 없는 단지도 표시</label>
+</details></aside>
+
+<main>
+  <div class="summary" id="summary"></div>
+  <div class="toolbar">
+    <span id="countTxt"></span><span class="spacer"></span>
+    <label>정렬 <select id="sort">
+      <option value="grade">등급 → 3역 소요</option>
+      <option value="price">최저가 낮은 순</option>
+      <option value="hub">3역 최대 소요 짧은 순</option>
+      <option value="walk">역 도보 짧은 순</option>
+      <option value="hh">세대수 많은 순</option>
+      <option value="age">신축 순</option>
+    </select></label>
+  </div>
+  <div class="list" id="list"><div class="loading">자료를 불러오는 중입니다…</div></div>
+  <button class="btn more" id="btnMore" type="button" hidden>더 보기</button>
+
+  <details class="note"><summary>조건·계산 방법</summary>
+    <dl>
+      <dt>수집 범위</dt><dd id="noteScope"></dd>
+      <dt>등급 표기</dt><dd>문자 = 강남역·광화문역·여의도역 세 곳 모두 도달하는 총 소요의 최대값(A/B/C 상한은 위에서 조정). 숫자 = 전용면적(-1, -2 기준도 조정 가능). 예) B-1 = 3역 40분대 + 전용 84㎡ 이상.</dd>
+      <dt>총 소요</dt><dd>단지→역 도보(직선×1.25÷80m) + 대기 3분 + 지하철(정차 0.8분 + 역간 km당 1.2분 + 환승 4분, 급행 포함·KTX/SRT 제외). 역 도보 상한 안의 역 중 가장 빠른 역을 택한다. 인접역 하차 후 도보는 인정하지 않고 정확히 그 역 도착 기준.</dd>
+      <dt>초등학교</dt><dd>네이버부동산의 배정 초등학교와 도보시간. 배정정보가 없으면 OSM 최근접 초등학교 직선거리로 추정.</dd>
+      <dt>중학교</dt><dd>배정 정보가 없어(학군 추첨) OSM 최근접 중학교 직선거리×1.25÷80m로 추정. 누락 학교가 있을 수 있음.</dd>
+      <dt>녹지</dt><dd>우수 = 300m 안 근린공원(5천㎡+) 또는 500m 안 대형녹지(10만㎡+). 양호 = 500m 안 근린공원 또는 1km 안 대형녹지. 규모는 OSM 외곽사각형 면적(과대 추정 가능).</dd>
+      <dt>매물</dt><dd>네이버부동산 매매 등록분(15억 이하 수집). 전용면적은 단지 평형표의 정확값으로 보정(네이버 매물은 정수로 잘림). 방·욕실·현관구조는 그 평형의 등록값. 동일 물건 중복 등록 가능. 실제 거래 가능 여부·가격은 중개사 확인 필요.</dd>
+      <dt>표시 원칙</dt><dd>조건에 맞는 매물이 지금 있는 단지만 보인다(체크박스로 해제 가능). 도보·소요시간은 모두 추정치이며 경계선상 물건은 지도로 확인할 것.</dd>
+      <dt>업데이트</dt><dd>"최신 자료 불러오기"는 마지막으로 수집·게시된 자료를 다시 읽는다. 수집(네이버 조회)은 사무실 PC에서 예약 실행되며 시각은 상단 "자료 기준"에 표시된다.</dd>
+    </dl>
+  </details>
+</main>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<!--APT_DATA-->
+<script>
+(function(){
+'use strict';
+const HUB3=['강남역','광화문역','여의도역'], HUBW=['시청·광화문','강남','여의도'];
+const DEF={pmin:50000,pmax:120000,amin:59,amax:200,t1:84,t2:59,room:3,bath:2,stair:true,gA:39,gB:49,gC:59,incA:true,incB:true,incC:true,walk:14,elem:8,mid:8,green:true,hh:400,age:15,gus:[],showEmpty:false,sort:'grade'};
+const GUS=['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
+let S=Object.assign({},DEF), DATA=null, VIEW=[], SHOWN=0, PAGE=60;
+const $=id=>document.getElementById(id);
+const TODAY=new Date();
+
+function load(){try{const s=JSON.parse(localStorage.getItem('apt-filter-v1')||'null'); if(s&&typeof s==='object') S=Object.assign({},DEF,s);}catch(e){}}
+function persist(){try{localStorage.setItem('apt-filter-v1',JSON.stringify(S));}catch(e){}}
+
+function won(m){m=Math.round(m); const e=Math.floor(m/10000), r=m%10000; if(e&&r) return e+'억 '+r.toLocaleString(); return e? e+'억' : r.toLocaleString();}
+function ageOf(ym){ if(!ym||ym.length<6) return 99; const y=+ym.slice(0,4), mo=+ym.slice(4,6)||1; return (TODAY - new Date(y,mo-1,1))/31557600000; }
+function ymTxt(ym){return ym? ym.slice(0,4)+'.'+ym.slice(4,6):'';}
+function areaTxt(a){ if(a==null) return ''; if(a>=1e6) return (a/1e6).toFixed(1)+'㎢'; if(a>=1e4) return (a/1e4).toFixed(1)+'만㎡'; return Math.round(a).toLocaleString()+'㎡'; }
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- 조건 UI ---------- */
+function syncUI(){
+  ['pmin','pmax','amin','amax','t1','t2','room','bath','gA','gB','gC','walk','elem','mid','hh','age'].forEach(k=>{$(k).value=S[k];});
+  ['stair','incA','incB','incC','green','showEmpty'].forEach(k=>{$(k).checked=!!S[k];});
+  $('sort').value=S.sort;
+  $('vPrice').textContent=won(S.pmin)+' ~ '+won(S.pmax);
+  $('vArea').textContent=S.amin+' ~ '+(S.amax>=200?'제한 없음':S.amax+'㎡');
+  $('vRoom').textContent=S.room+'개 이상'; $('vBath').textContent=S.bath+'개 이상';
+  $('vWalk').textContent=S.walk+'분 이내';
+  $('vElem').textContent=S.elem>=21?'무관':S.elem+'분 이내'; $('vMid').textContent=S.mid>=21?'무관':S.mid+'분 이내';
+  $('vHh').textContent=S.hh.toLocaleString()+'세대 이상'; $('vAge').textContent=S.age+'년 이내';
+  $('vGu').textContent=S.gus.length? S.gus.join('·'):'전체';
+  fill('fPrice','pmin','pmax'); fill('fArea','amin','amax');
+  document.querySelectorAll('#gus button').forEach(b=>b.classList.toggle('on',S.gus.includes(b.dataset.gu)));
+}
+function fill(id,a,b){const ia=$(a),ib=$(b),lo=+ia.min,hi=+ia.max; const l=(S[a]-lo)/(hi-lo)*100, r=(S[b]-lo)/(hi-lo)*100; const f=$(id); f.style.left=l+'%'; f.style.width=Math.max(0,r-l)+'%';}
+function bind(){
+  const rng=(k,fix)=>{$(k).addEventListener('input',e=>{S[k]=+e.target.value; if(fix) fix(); syncUI(); apply();});};
+  rng('pmin',()=>{if(S.pmin>S.pmax) S.pmax=S.pmin;}); rng('pmax',()=>{if(S.pmax<S.pmin) S.pmin=S.pmax;});
+  rng('amin',()=>{if(S.amin>S.amax) S.amax=S.amin;}); rng('amax',()=>{if(S.amax<S.amin) S.amin=S.amax;});
+  ['room','bath','walk','elem','mid','hh','age'].forEach(k=>rng(k));
+  ['t1','t2','gA','gB','gC'].forEach(k=>{$(k).addEventListener('change',e=>{const v=+e.target.value; if(isFinite(v)&&v>0){S[k]=v;} syncUI(); apply();});});
+  ['stair','incA','incB','incC','green','showEmpty'].forEach(k=>{$(k).addEventListener('change',e=>{S[k]=e.target.checked; apply();});});
+  $('sort').addEventListener('change',e=>{S.sort=e.target.value; apply();});
+  const gb=$('gus'); GUS.forEach(g=>{const b=document.createElement('button'); b.type='button'; b.textContent=g.replace('구',''); b.dataset.gu=g; b.addEventListener('click',()=>{const i=S.gus.indexOf(g); if(i<0) S.gus.push(g); else S.gus.splice(i,1); syncUI(); apply();}); gb.appendChild(b);});
+  $('btnReset').addEventListener('click',()=>{S=Object.assign({},DEF,{gus:[]}); syncUI(); apply(); toast('처음 조건으로 되돌렸습니다');});
+  $('btnUpdate').addEventListener('click',refresh);
+  $('btnMore').addEventListener('click',()=>{renderList(false);});
+  $('list').addEventListener('toggle',e=>{const d=e.target; if(d.classList&&d.classList.contains('cx')&&d.open&&!d.dataset.done){d.dataset.done=1; d.querySelector('.det').innerHTML=detail(VIEW[+d.dataset.i]);}},true);
+}
+
+/* ---------- 판정 ---------- */
+function hubTime(c,h){const o=c.hub[h]||[]; for(const x of o){ if(x[1]<=S.walk) return x[2]; } return null;}
+function hubGrade(mx){ if(mx==null) return null; if(mx<=S.gA) return 'A'; if(mx<=S.gB) return 'B'; if(mx<=S.gC) return 'C'; return null; }
+function areaTier(a){ if(a>=S.t1) return '1'; if(a>=S.t2) return '2'; return null; }
+function elemWalk(c){ return c.el? c.el[1] : (c.eo&&c.eo[1]!=null? c.eo[1] : 99); }
+function midWalk(c){ return c.mo&&c.mo[1]!=null? c.mo[1] : 99; }
+function evalComplex(c){
+  if(c.hh<S.hh) return null;
+  const age=ageOf(c.ym); if(age>S.age) return null;
+  if(S.gus.length&&!S.gus.includes(c.gu)) return null;
+  const st=c.st.filter(s=>s[1]<=S.walk); if(!st.length) return null;
+  const ew=elemWalk(c), mw=midWalk(c);
+  if(S.elem<21&&ew>S.elem) return null; if(S.mid<21&&mw>S.mid) return null;
+  if(S.green&&!(c.gr==='우수'||c.gr==='양호')) return null;
+  const t3={}; let mx=0;
+  for(const h of HUB3){const t=hubTime(c,h); if(t==null) return null; t3[h]=t; if(t>mx) mx=t;}
+  const g=hubGrade(mx); if(!g) return null;
+  if(!S['inc'+g]) return null;
+  const arts=[]; const tiers=new Set(); let lo=null,hi=null,lo1=null;
+  for(const a of c.ar){
+    const p=a[0], ex=a[1];
+    if(p<S.pmin||p>S.pmax) continue;
+    if(ex<S.amin||(S.amax<200&&ex>S.amax)) continue;
+    const t=areaTier(ex); if(!t) continue;
+    if(S.stair&&a[3]!=='계단식') continue;
+    if((a[4]==null||a[4]<S.room)||(a[5]==null||a[5]<S.bath)) continue;
+    arts.push({a,grade:g+'-'+t,tier:t}); tiers.add(g+'-'+t);
+    lo=lo==null?p:Math.min(lo,p); hi=hi==null?p:Math.max(hi,p); if(t==='1') lo1=lo1==null?p:Math.min(lo1,p);
+  }
+  if(!arts.length&&!S.showEmpty) return null;
+  arts.sort((x,y)=>x.grade.localeCompare(y.grade)||x.a[0]-y.a[0]);
+  const lines=new Set(); st.forEach(s=>s[2].split(',').filter(Boolean).forEach(l=>lines.add(l)));
+  const tw={}; HUBW.forEach(h=>{tw[h]=hubTime(c,h);});
+  return {c,g,mx,t3,tw,st,lines:[...lines],ew,mw,age,arts,tiers:[...tiers].sort(),lo,hi,lo1};
+}
+function apply(){
+  persist(); if(!DATA) return;
+  VIEW=[]; for(const c of DATA.cx){const r=evalComplex(c); if(r) VIEW.push(r);}
+  const G={A:0,B:1,C:2};
+  const sorters={
+    grade:(x,y)=>G[x.g]-G[y.g]||x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
+    price:(x,y)=>(x.lo??1e9)-(y.lo??1e9)||x.mx-y.mx,
+    hub:(x,y)=>x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
+    walk:(x,y)=>x.st[0][1]-y.st[0][1]||x.mx-y.mx,
+    hh:(x,y)=>y.c.hh-x.c.hh||x.mx-y.mx,
+    age:(x,y)=>x.age-y.age||x.mx-y.mx};
+  VIEW.sort(sorters[S.sort]||sorters.grade);
+  renderSummary(); renderList(true);
+}
+
+/* ---------- 렌더 ---------- */
+function renderSummary(){
+  const nArt=VIEW.reduce((s,r)=>s+r.arts.length,0);
+  const byG={A:0,B:0,C:0}; VIEW.forEach(r=>{if(r.arts.length) byG[r.g]++;});
+  const byT={}; VIEW.forEach(r=>r.arts.forEach(x=>{byT[x.grade]=(byT[x.grade]||0)+1;}));
+  const gu={}; VIEW.forEach(r=>{gu[r.c.gu]=(gu[r.c.gu]||0)+r.arts.length;});
+  const topGu=Object.entries(gu).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([g,n])=>g.replace('구','')+' '+n).join(' · ');
+  const tierTxt=Object.keys(byT).sort().map(k=>k+' '+byT[k]).join(' · ')||'-';
+  $('summary').innerHTML=
+    tile('조건 충족 단지',VIEW.length,'개')+tile('매물',nArt,'건')+
+    `<div class="tile"><div class="k">3역 등급별 단지</div><div class="n" style="font-size:15px;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="g A">A ${byG.A}</span><span class="g B">B ${byG.B}</span><span class="g C">C ${byG.C}</span></div></div>`+
+    `<div class="tile"><div class="k">등급별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
+    `<div class="tile"><div class="k">구별 매물(상위)</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(topGu||'-')}</div></div>`;
+  $('countTxt').textContent=VIEW.length? `${VIEW.length}개 단지 · ${nArt}건 (전체 수집 ${DATA.n_all.toLocaleString()}단지 중)` : '조건에 맞는 매물이 없습니다';
+}
+function tile(k,n,u){return `<div class="tile"><div class="k">${k}</div><div class="n">${n.toLocaleString()}<small>${u}</small></div></div>`;}
+function renderList(reset){
+  const L=$('list');
+  if(reset){L.innerHTML=''; SHOWN=0;}
+  if(!VIEW.length){L.innerHTML='<div class="empty">조건에 맞는 매물이 없습니다. 가격·면적·등급 포함 범위나 학교·역 도보 조건을 조금 넓혀 보세요.</div>'; $('btnMore').hidden=true; return;}
+  const end=Math.min(VIEW.length,SHOWN+PAGE); const frag=document.createDocumentFragment();
+  for(let i=SHOWN;i<end;i++){const r=VIEW[i]; const d=document.createElement('details'); d.className='cx'; d.dataset.i=i; d.innerHTML=card(r)+'<div class="det"></div>'; frag.appendChild(d);}
+  L.appendChild(frag); SHOWN=end; $('btnMore').hidden=SHOWN>=VIEW.length; $('btnMore').textContent=`더 보기 (${SHOWN}/${VIEW.length})`;
+}
+function gpill(t){return `<span class="g ${t[0]}">${t}</span>`;}
+function card(r){
+  const c=r.c, s0=r.st[0];
+  const grades=r.tiers.length? r.tiers.map(gpill).join('') : `<span class="g ${r.g}">${r.g}</span>`;
+  const sch=(r.ew<99?`초등 <b>${r.ew}분</b>`:'초등 정보없음')+' · '+(r.mw<99?`중학 <b>${r.mw}분</b>`:'중학 정보없음');
+  return `<summary>
+    <div class="grades">${grades}</div>
+    <div class="name">${esc(c.nm)}<small>${esc(c.gu)} ${esc(c.dg)}</small></div>
+    <div class="price">${r.arts.length? `<div class="p">${won(r.lo)}${r.hi>r.lo?' ~':''}</div><div class="c">${r.arts.length}건${r.hi>r.lo?' · 최고 '+won(r.hi):''}</div>` : '<div class="c">조건 매물 없음</div>'}</div>
+    <div class="meta">
+      <span><b>${esc(s0[0])}역</b> ${s0[1]}분${s0[2]?' ('+esc(s0[2])+')':''}${r.lines.length>=2?' · '+(r.lines.length>=3?'트리플':'더블')+'역세권':''}</span>
+      <span>강남 <b>${r.t3['강남역']}</b> · 광화문 <b>${r.t3['광화문역']}</b> · 여의도 <b>${r.t3['여의도역']}</b>분</span>
+      <span>${sch}</span>
+      <span>녹지 <b>${esc(c.gr)}</b></span>
+      <span>${ymTxt(c.ym)} 입주 (<b>${r.age.toFixed(1)}년</b>) · <b>${c.hh.toLocaleString()}</b>세대</span>
+    </div></summary>`;
+}
+function via(c,h){const o=(c.hub[h]||[]).find(x=>x[1]<=S.walk); return o? `${o[2]}분 (${o[0]}역 경유, 도보 ${o[1]}분)`:'-';}
+function detail(r){
+  const c=r.c;
+  const kv=[
+    ['3역 최대 소요',`${r.mx}분 → ${r.g}등급`],
+    ['강남역',via(c,'강남역')],['광화문역',via(c,'광화문역')],['여의도역',via(c,'여의도역')],
+    ['시청·광화문 권역',via(c,'시청·광화문')],['강남 권역',via(c,'강남')],['여의도 권역',via(c,'여의도')],
+    ['도보권 역',c.st.filter(s=>s[1]<=S.walk).map(s=>`${s[0]}(${s[2]||'?'}) ${s[1]}분`).join(' / ')],
+    ['이용 노선',r.lines.join(', ')||'(노선정보 없음)'],
+    ['배정 초등학교',c.el? `${c.el[0]} 도보 ${c.el[1]}분 (네이버 배정)` : (c.eo? `${c.eo[0]} 도보 ${c.eo[1]}분 (최근접 추정)`:'정보 없음')],
+    ['최근접 중학교',c.mo? `${c.mo[0]} 도보 ${c.mo[1]}분 (추정)`:'정보 없음'],
+    ['녹지',c.gp? `${c.gr} · ${c.gp[0]||'(이름없음)'} ${c.gp[1]||''} ${c.gp[2]!=null?c.gp[2]+'m':''} ${c.gp[3]?areaTxt(c.gp[3]):''}`:c.gr],
+    ['준공 · 연차',`${ymTxt(c.ym)} · ${r.age.toFixed(1)}년`],['세대수',c.hh.toLocaleString()+'세대'],
+    ['주차/세대',c.pk!=null?c.pk:'-'],['시공사',c.bd||'-'],['주소',c.ad||'-'],
+    ['네이버부동산',`<a href="https://new.land.naver.com/complexes/${c.no}" target="_blank" rel="noopener">단지 페이지 열기</a>`],
+  ];
+  const kvh='<div class="kv">'+kv.map(([k,v])=>`<div><span>${k}</span><span>${k==='네이버부동산'?v:esc(v)}</span></div>`).join('')+'</div>';
+  let rows='';
+  if(r.arts.length){
+    rows='<div class="tw"><table><thead><tr><th>등급</th><th class="r">가격</th><th class="r">전용㎡</th><th class="r">전용평</th><th class="r">공급㎡</th><th>타입</th><th>방/욕</th><th>현관</th><th>층</th><th>동</th><th>향</th><th>확인일</th><th>특징</th><th>중개사</th><th></th></tr></thead><tbody>'+
+      r.arts.map(x=>{const a=x.a; return `<tr><td>${gpill(x.grade)}</td><td class="r num">${won(a[0])}</td><td class="r num">${a[1]}</td><td class="r num">${(a[1]/3.3058).toFixed(1)}</td><td class="r num">${a[2]??''}</td><td>${esc(a[6])}</td><td class="num">${a[4]??'-'}/${a[5]??'-'}</td><td>${esc(a[3])}</td><td class="num">${esc(a[7])}</td><td>${esc(a[8])}</td><td>${esc(a[9])}</td><td class="num">${a[10]?a[10].slice(4,6)+'/'+a[10].slice(6,8):''}</td><td class="wrap">${esc(a[11])}</td><td>${esc(a[12])}</td><td>${a[13]?`<a href="https://new.land.naver.com/complexes/${c.no}?articleNo=${a[13]}" target="_blank" rel="noopener">매물</a>`:''}</td></tr>`;}).join('')+
+      '</tbody></table></div>';
+  } else rows='<div class="small">현재 조건에 맞는 매물이 없습니다. (이 단지 수집 매물 '+c.ar.length+'건)</div>';
+  return kvh+rows;
+}
+
+/* ---------- 자료 ---------- */
+let toastT;
+function toast(m){const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+async function fetchData(bust){
+  const r=await fetch('data.json'+(bust?'?v='+Date.now():''),{cache:bust?'no-store':'default'});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function setData(d){
+  DATA=d; $('asof').textContent=d.built+' (네이버부동산)';
+  $('asofSub').textContent=`· 수집 ${d.n_all.toLocaleString()}단지 · 15억 이하 매물 보유 ${d.cx.length.toLocaleString()}단지`;
+  $('noteScope').textContent=`서울 25개 구 아파트 중 ${d.min_hh}세대 이상 · ${d.min_ym.slice(0,4)}년 이후 입주 ${d.n_all.toLocaleString()}단지. 역은 도보 ${d.walk_max}분 안까지, 매물은 매매 ${won(d.max_manwon)} 이하까지 수집. 그 밖의 값은 슬라이더로 조절할 수 없다.`;
+  apply();
+}
+async function refresh(){
+  const b=$('btnUpdate'); b.disabled=true; b.textContent='불러오는 중…';
+  try{const d=await fetchData(true); const same=DATA&&d.built===DATA.built; setData(d); toast(same? '이미 최신 자료입니다 (기준 '+d.built+'). 새 수집분이 게시되면 여기서 바로 반영됩니다.' : '자료를 갱신했습니다 (기준 '+d.built+')');}
+  catch(e){toast(INLINE? '이 파일은 오프라인 사본입니다(기준 '+INLINE.built+'). 게시된 주소에서 열면 최신 자료를 받습니다.' : '자료를 불러오지 못했습니다: '+e.message);}
+  finally{b.disabled=false; b.textContent='최신 자료 불러오기';}
+}
+const INLINE=window.APT_DATA||null;
+load(); bind(); syncUI();
+if(INLINE){ setData(INLINE); }
+else fetchData(false).then(setData).catch(e=>{$('list').innerHTML='<div class="empty">자료(data.json)를 불러오지 못했습니다. '+esc(e.message)+'</div>'; $('asof').textContent='불러오기 실패';});
+})();
+</script>
