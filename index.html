@@ -79,6 +79,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 .tile .k{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
 .tile .n{font-size:22px;font-weight:600;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
+.tile .n .g{white-space:nowrap;font-size:12px}
 .tile .n small{font-size:12px;color:var(--muted);font-family:"IBM Plex Sans KR",sans-serif;margin-left:4px;font-weight:400}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 10px;font-size:13px;color:var(--muted)}
 .toolbar select{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:4px 8px;font-size:13px}
@@ -365,7 +366,7 @@ function renderSummary(){
   const tierTxt=Object.keys(byT).sort().map(k=>k+' '+byT[k]).join(' · ')||'-';
   $('summary').innerHTML=
     tile('조건 충족 단지',VIEW.length,'개')+tile('매물(동일매물 묶음)',nArt,'건')+
-    `<div class="tile"><div class="k">업무지구별 단지</div><div class="n" style="font-size:15px;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="g A">A 강남 ${byG.A}</span><span class="g B">B 광화문 ${byG.B}</span><span class="g C">C 여의도 ${byG.C}</span></div></div>`+
+    `<div class="tile"><div class="k">업무지구별 단지</div><div class="n" style="font-size:15px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span class="g A">A 강남 ${byG.A}</span><span class="g B">B 광화문 ${byG.B}</span><span class="g C">C 여의도 ${byG.C}</span></div></div>`+
     `<div class="tile"><div class="k">구분별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
     `<div class="tile"><div class="k">구별 매물(상위)</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(topGu||'-')}</div></div>`;
   $('countTxt').textContent=VIEW.length? `${VIEW.length}개 단지 · ${nArt}건 (전체 수집 ${DATA.n_all.toLocaleString()}단지 중)` : '조건에 맞는 매물이 없습니다';
