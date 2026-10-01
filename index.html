@@ -5,19 +5,19 @@
 :root{
   --bg:#F5F6F8; --panel:#FFFFFF; --ink:#1B2430; --muted:#66707F; --line:#DDE2EA; --line2:#EEF1F5;
   --accent:#2F4B7C; --accent-ink:#FFFFFF; --soft:#E8EEF7;
-  --gA:#2E7D5B; --gAbg:#E3F3EB; --gB:#A66F0F; --gBbg:#FBF0D6; --gC:#B9542B; --gCbg:#FBE6DC;
+  --gA:#2E7D5B; --gAbg:#E3F3EB; --gB:#A66F0F; --gBbg:#FBF0D6; --gC:#B9542B; --gCbg:#FBE6DC; --gD:#5A6B8C; --gDbg:#E6EAF2;
   --thumb:#2F4B7C; --track:#D6DCE6; --shadow:0 1px 2px rgba(20,30,50,.06),0 6px 20px rgba(20,30,50,.06);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#12161C; --panel:#1B2129; --ink:#E7EBF1; --muted:#9AA5B5; --line:#2C3542; --line2:#242C36;
   --accent:#8FB0E8; --accent-ink:#0F1520; --soft:#22304A;
-  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418;
+  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418; --gD:#A9B6CC; --gDbg:#262E3C;
   --thumb:#8FB0E8; --track:#333D4B; --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
 }}
 :root[data-theme="dark"]{
   --bg:#12161C; --panel:#1B2129; --ink:#E7EBF1; --muted:#9AA5B5; --line:#2C3542; --line2:#242C36;
   --accent:#8FB0E8; --accent-ink:#0F1520; --soft:#22304A;
-  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418;
+  --gA:#6FCF9A; --gAbg:#1B3328; --gB:#E2B35A; --gBbg:#3A2E14; --gC:#F09A72; --gCbg:#3D2418; --gD:#A9B6CC; --gDbg:#262E3C;
   --thumb:#8FB0E8; --track:#333D4B; --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
@@ -69,7 +69,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .tier input[type=number]{width:50px;padding:4px 5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);text-align:right;font-size:13px}
 .tiers{display:flex;flex-wrap:wrap;gap:8px 14px}
 .g{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;font-weight:700;font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.02em}
-.g.A{background:var(--gAbg);color:var(--gA)}.g.B{background:var(--gBbg);color:var(--gB)}.g.C{background:var(--gCbg);color:var(--gC)}
+.g.A{background:var(--gAbg);color:var(--gA)}.g.B{background:var(--gBbg);color:var(--gB)}.g.C{background:var(--gCbg);color:var(--gC)}.g.D{background:var(--gDbg);color:var(--gD)}
+.gus .lbl{width:100%;font-size:11.5px;color:var(--muted);margin-top:4px}
 .g.x{background:var(--line2);color:var(--muted)}
 .gus{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .gus button{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:2px 9px;font-size:12px}
@@ -177,11 +178,13 @@ td.r,th.r{text-align:right}
     <div class="tier"><span class="g A">A</span><input type="number" id="gA" min="10" max="120" aria-label="A등급 상한">분</div>
     <div class="tier"><span class="g B">B</span><input type="number" id="gB" min="10" max="120" aria-label="B등급 상한">분</div>
     <div class="tier"><span class="g C">C</span><input type="number" id="gC" min="10" max="120" aria-label="C등급 상한">분</div>
+    <div class="tier"><span class="g D">D</span><input type="number" id="gD" min="10" max="120" aria-label="D등급 상한">분</div>
   </div>
   <div class="f" style="display:flex;gap:14px">
     <label class="chk"><input type="checkbox" id="incA"> A 포함</label>
     <label class="chk"><input type="checkbox" id="incB"> B 포함</label>
     <label class="chk"><input type="checkbox" id="incC"> C 포함</label>
+    <label class="chk"><input type="checkbox" id="incD"> D 포함</label>
   </div>
   <div class="small">총 소요 = 단지→역 도보 + 대기 3분 + 지하철(환승 4분). 아래 역 도보 상한 안의 역만 이용.</div>
 
@@ -198,7 +201,7 @@ td.r,th.r{text-align:right}
     <div><label class="t"><span>세대수</span><span class="v" id="vHh"></span></label><input type="range" id="hh" min="100" max="2000" step="50"></div>
     <div><label class="t"><span>입주 연차</span><span class="v" id="vAge"></span></label><input type="range" id="age" min="1" max="36" step="1"></div>
   </div>
-  <div class="f"><label class="t"><span>구</span><span class="small" id="vGu">전체</span></label><div class="gus" id="gus"></div></div>
+  <div class="f"><label class="t"><span>지역</span><span class="small" id="vGu">전체</span></label><div class="gus" id="gus"></div></div>
   <label class="chk"><input type="checkbox" id="showEmpty"> 조건 매물이 없는 단지도 표시</label>
 </details></aside>
 
@@ -221,7 +224,7 @@ td.r,th.r{text-align:right}
   <details class="note"><summary>조건·계산 방법</summary>
     <dl>
       <dt>수집 범위</dt><dd id="noteScope"></dd>
-      <dt>등급 표기</dt><dd>문자 = 강남역·광화문역·여의도역 세 곳 모두 도달하는 총 소요의 최대값(A/B/C 상한은 위에서 조정). 숫자 = 전용면적(-1, -2 기준도 조정 가능). 예) B-1 = 3역 40분대 + 전용 84㎡ 이상.</dd>
+      <dt>등급 표기</dt><dd>문자 = 강남역·광화문역·여의도역 세 곳 모두 도달하는 총 소요의 최대값(A/B/C/D 상한은 위에서 조정, 기본 39/49/59/69분). 숫자 = 전용면적(-1, -2 기준도 조정 가능). 예) B-1 = 3역 40분대 + 전용 84㎡ 이상.</dd>
       <dt>총 소요</dt><dd>단지→역 도보(직선×1.25÷80m) + 대기 3분 + 지하철(정차 0.8분 + 역간 km당 1.2분 + 환승 4분, 급행 포함·KTX/SRT 제외). 역 도보 상한 안의 역 중 가장 빠른 역을 택한다. 인접역 하차 후 도보는 인정하지 않고 정확히 그 역 도착 기준.</dd>
       <dt>초등학교</dt><dd>네이버부동산의 배정 초등학교와 도보시간. 배정정보가 없으면 OSM 최근접 초등학교 직선거리로 추정.</dd>
       <dt>중학교</dt><dd>배정 정보가 없어(학군 추첨) OSM 최근접 중학교 직선거리×1.25÷80m로 추정. 누락 학교가 있을 수 있음.</dd>
@@ -247,8 +250,9 @@ td.r,th.r{text-align:right}
 (function(){
 'use strict';
 const HUB3=['강남역','광화문역','여의도역'], HUBW=['시청·광화문','강남','여의도'];
-const DEF={pmin:50000,pmax:120000,amin:59,amax:200,t1:84,t2:59,room:3,bath:2,stair:true,gA:39,gB:49,gC:59,incA:true,incB:true,incC:true,walk:14,elem:8,mid:8,green:true,hh:400,age:15,gus:[],showEmpty:false,sort:'grade'};
-const GUS=['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
+const DEF={pmin:50000,pmax:120000,amin:59,amax:200,t1:84,t2:59,room:3,bath:2,stair:true,gA:39,gB:49,gC:59,gD:69,incA:true,incB:true,incC:true,incD:true,walk:14,elem:8,mid:8,green:true,hh:400,age:15,gus:[],showEmpty:false,sort:'grade'};
+const GUS_SEOUL=['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
+let GUS_GG=[];
 let S=Object.assign({},DEF), DATA=null, VIEW=[], SHOWN=0, PAGE=60;
 const $=id=>document.getElementById(id);
 const TODAY=new Date();
@@ -264,8 +268,8 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 
 /* ---------- 조건 UI ---------- */
 function syncUI(){
-  ['pmin','pmax','amin','amax','t1','t2','room','bath','gA','gB','gC','walk','elem','mid','hh','age'].forEach(k=>{$(k).value=S[k];});
-  ['stair','incA','incB','incC','green','showEmpty'].forEach(k=>{$(k).checked=!!S[k];});
+  ['pmin','pmax','amin','amax','t1','t2','room','bath','gA','gB','gC','gD','walk','elem','mid','hh','age'].forEach(k=>{$(k).value=S[k];});
+  ['stair','incA','incB','incC','incD','green','showEmpty'].forEach(k=>{$(k).checked=!!S[k];});
   $('sort').value=S.sort;
   $('vPrice').textContent=won(S.pmin)+' ~ '+won(S.pmax);
   $('vArea').textContent=S.amin+' ~ '+(S.amax>=200?'제한 없음':S.amax+'㎡');
@@ -273,9 +277,16 @@ function syncUI(){
   $('vWalk').textContent=S.walk+'분 이내';
   $('vElem').textContent=S.elem>=21?'무관':S.elem+'분 이내'; $('vMid').textContent=S.mid>=21?'무관':S.mid+'분 이내';
   $('vHh').textContent=S.hh.toLocaleString()+'세대 이상'; $('vAge').textContent=S.age+'년 이내';
-  $('vGu').textContent=S.gus.length? S.gus.join('·'):'전체';
+  $('vGu').textContent=S.gus.length? S.gus.map(g=>g.replace(/구$/,'').replace(/시$/,'')).join('·'):'전체(서울+경기)';
   fill('fPrice','pmin','pmax'); fill('fArea','amin','amax');
-  document.querySelectorAll('#gus button').forEach(b=>b.classList.toggle('on',S.gus.includes(b.dataset.gu)));
+  document.querySelectorAll('#gus button').forEach(b=>{const g=b.dataset.gu; b.classList.toggle('on', g.startsWith('__')? (g==='__서울'?GUS_SEOUL:GUS_GG).every(x=>S.gus.includes(x)) : S.gus.includes(g));});
+}
+function renderGus(){
+  const gb=$('gus'); gb.innerHTML='';
+  const chip=(g,label)=>{const b=document.createElement('button'); b.type='button'; b.textContent=label; b.dataset.gu=g; b.addEventListener('click',()=>{const i=S.gus.indexOf(g); if(i<0) S.gus.push(g); else S.gus.splice(i,1); syncUI(); apply();}); gb.appendChild(b);};
+  const grp=(t,list,fn)=>{ if(!list.length) return; const l=document.createElement('div'); l.className='lbl'; l.textContent=t; gb.appendChild(l); const all=document.createElement('button'); all.type='button'; all.textContent=t+' 전체'; all.addEventListener('click',()=>{const on=list.every(g=>S.gus.includes(g)); S.gus=S.gus.filter(g=>!list.includes(g)); if(!on) S.gus.push(...list); syncUI(); apply();}); all.dataset.gu='__'+t; gb.appendChild(all); list.forEach(g=>chip(g,fn(g))); };
+  grp('서울',GUS_SEOUL,g=>g.replace(/구$/,''));
+  grp('경기',GUS_GG,g=>g.replace(/시 /,' ').replace(/구$/,''));
 }
 function fill(id,a,b){const ia=$(a),ib=$(b),lo=+ia.min,hi=+ia.max; const l=(S[a]-lo)/(hi-lo)*100, r=(S[b]-lo)/(hi-lo)*100; const f=$(id); f.style.left=l+'%'; f.style.width=Math.max(0,r-l)+'%';}
 function bind(){
@@ -283,10 +294,10 @@ function bind(){
   rng('pmin',()=>{if(S.pmin>S.pmax) S.pmax=S.pmin;}); rng('pmax',()=>{if(S.pmax<S.pmin) S.pmin=S.pmax;});
   rng('amin',()=>{if(S.amin>S.amax) S.amax=S.amin;}); rng('amax',()=>{if(S.amax<S.amin) S.amin=S.amax;});
   ['room','bath','walk','elem','mid','hh','age'].forEach(k=>rng(k));
-  ['t1','t2','gA','gB','gC'].forEach(k=>{$(k).addEventListener('change',e=>{const v=+e.target.value; if(isFinite(v)&&v>0){S[k]=v;} syncUI(); apply();});});
-  ['stair','incA','incB','incC','green','showEmpty'].forEach(k=>{$(k).addEventListener('change',e=>{S[k]=e.target.checked; apply();});});
+  ['t1','t2','gA','gB','gC','gD'].forEach(k=>{$(k).addEventListener('change',e=>{const v=+e.target.value; if(isFinite(v)&&v>0){S[k]=v;} syncUI(); apply();});});
+  ['stair','incA','incB','incC','incD','green','showEmpty'].forEach(k=>{$(k).addEventListener('change',e=>{S[k]=e.target.checked; apply();});});
   $('sort').addEventListener('change',e=>{S.sort=e.target.value; apply();});
-  const gb=$('gus'); GUS.forEach(g=>{const b=document.createElement('button'); b.type='button'; b.textContent=g.replace('구',''); b.dataset.gu=g; b.addEventListener('click',()=>{const i=S.gus.indexOf(g); if(i<0) S.gus.push(g); else S.gus.splice(i,1); syncUI(); apply();}); gb.appendChild(b);});
+  renderGus();
   $('btnReset').addEventListener('click',()=>{S=Object.assign({},DEF,{gus:[]}); syncUI(); apply(); toast('처음 조건으로 되돌렸습니다');});
   $('btnUpdate').addEventListener('click',refresh);
   $('btnFull').addEventListener('click',()=>trigger('full'));
@@ -296,7 +307,7 @@ function bind(){
 
 /* ---------- 판정 ---------- */
 function hubTime(c,h){const o=c.hub[h]||[]; for(const x of o){ if(x[1]<=S.walk) return x[2]; } return null;}
-function hubGrade(mx){ if(mx==null) return null; if(mx<=S.gA) return 'A'; if(mx<=S.gB) return 'B'; if(mx<=S.gC) return 'C'; return null; }
+function hubGrade(mx){ if(mx==null) return null; if(mx<=S.gA) return 'A'; if(mx<=S.gB) return 'B'; if(mx<=S.gC) return 'C'; if(mx<=S.gD) return 'D'; return null; }
 function areaTier(a){ if(a>=S.t1) return '1'; if(a>=S.t2) return '2'; return null; }
 function elemWalk(c){ return c.el? c.el[1] : (c.eo&&c.eo[1]!=null? c.eo[1] : 99); }
 function midWalk(c){ return c.mo&&c.mo[1]!=null? c.mo[1] : 99; }
@@ -332,7 +343,7 @@ function evalComplex(c){
 function apply(){
   persist(); if(!DATA) return;
   VIEW=[]; for(const c of DATA.cx){const r=evalComplex(c); if(r) VIEW.push(r);}
-  const G={A:0,B:1,C:2};
+  const G={A:0,B:1,C:2,D:3};
   const sorters={
     grade:(x,y)=>G[x.g]-G[y.g]||x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
     price:(x,y)=>(x.lo??1e9)-(y.lo??1e9)||x.mx-y.mx,
@@ -347,14 +358,14 @@ function apply(){
 /* ---------- 렌더 ---------- */
 function renderSummary(){
   const nArt=VIEW.reduce((s,r)=>s+r.arts.length,0);
-  const byG={A:0,B:0,C:0}; VIEW.forEach(r=>{if(r.arts.length) byG[r.g]++;});
+  const byG={A:0,B:0,C:0,D:0}; VIEW.forEach(r=>{if(r.arts.length) byG[r.g]++;});
   const byT={}; VIEW.forEach(r=>r.arts.forEach(x=>{byT[x.grade]=(byT[x.grade]||0)+1;}));
   const gu={}; VIEW.forEach(r=>{gu[r.c.gu]=(gu[r.c.gu]||0)+r.arts.length;});
   const topGu=Object.entries(gu).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([g,n])=>g.replace('구','')+' '+n).join(' · ');
   const tierTxt=Object.keys(byT).sort().map(k=>k+' '+byT[k]).join(' · ')||'-';
   $('summary').innerHTML=
     tile('조건 충족 단지',VIEW.length,'개')+tile('매물',nArt,'건')+
-    `<div class="tile"><div class="k">3역 등급별 단지</div><div class="n" style="font-size:15px;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="g A">A ${byG.A}</span><span class="g B">B ${byG.B}</span><span class="g C">C ${byG.C}</span></div></div>`+
+    `<div class="tile"><div class="k">3역 등급별 단지</div><div class="n" style="font-size:15px;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="g A">A ${byG.A}</span><span class="g B">B ${byG.B}</span><span class="g C">C ${byG.C}</span><span class="g D">D ${byG.D}</span></div></div>`+
     `<div class="tile"><div class="k">등급별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
     `<div class="tile"><div class="k">구별 매물(상위)</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(topGu||'-')}</div></div>`;
   $('countTxt').textContent=VIEW.length? `${VIEW.length}개 단지 · ${nArt}건 (전체 수집 ${DATA.n_all.toLocaleString()}단지 중)` : '조건에 맞는 매물이 없습니다';
@@ -375,7 +386,7 @@ function card(r){
   const sch=(r.ew<99?`초등 <b>${r.ew}분</b>`:'초등 정보없음')+' · '+(r.mw<99?`중학 <b>${r.mw}분</b>`:'중학 정보없음');
   return `<summary>
     <div class="grades">${grades}</div>
-    <div class="name">${esc(c.nm)}<small>${esc(c.gu)} ${esc(c.dg)}</small></div>
+    <div class="name">${esc(c.nm)}<small>${c.sd==='경기'?'경기 ':''}${esc(c.gu)} ${esc(c.dg)}</small></div>
     <div class="price">${r.arts.length? `<div class="p">${won(r.lo)}${r.hi>r.lo?' ~':''}</div><div class="c">${r.arts.length}건${r.hi>r.lo?' · 최고 '+won(r.hi):''}</div>` : '<div class="c">조건 매물 없음</div>'}</div>
     <div class="meta">
       <span><b>${esc(s0[0])}역</b> ${s0[1]}분${s0[2]?' ('+esc(s0[2])+')':''}${r.lines.length>=2?' · '+(r.lines.length>=3?'트리플':'더블')+'역세권':''}</span>
@@ -432,9 +443,9 @@ async function decrypt(buf,pw){
   return JSON.parse(await new Response(ds).text());
 }
 function setData(d){
-  DATA=d; $('asof').textContent=d.built+' (네이버부동산)';
+  DATA=d; GUS_GG=[...new Set(d.cx.filter(c=>c.sd==='경기').map(c=>c.gu))].sort(); renderGus(); $('asof').textContent=d.built+' (네이버부동산)';
   $('asofSub').textContent=`· 수집 ${d.n_all.toLocaleString()}단지 · 15억 이하 매물 보유 ${d.cx.length.toLocaleString()}단지`;
-  $('noteScope').textContent=`서울 25개 구 아파트 중 ${d.min_hh}세대 이상 · ${d.min_ym.slice(0,4)}년 이후 입주 ${d.n_all.toLocaleString()}단지. 역은 도보 ${d.walk_max}분 안까지, 매물은 매매 ${won(d.max_manwon)} 이하까지 수집. 그 밖의 값은 슬라이더로 조절할 수 없다.`;
+  $('noteScope').textContent=`서울 25개 구${(d.cities||[]).length?' + 경기 전철권 '+(d.cities||[]).length+'개 시·군·구('+(d.cities||[]).join(', ')+')':''} 아파트 중 ${d.min_hh}세대 이상 · ${d.min_ym.slice(0,4)}년 이후 입주 ${d.n_all.toLocaleString()}단지. 역은 도보 ${d.walk_max}분 안까지, 매물은 매매 ${won(d.max_manwon)} 이하까지 수집. 그 밖의 값은 슬라이더로 조절할 수 없다.`;
   apply();
 }
 let PW=null;
