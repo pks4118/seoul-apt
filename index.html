@@ -88,7 +88,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .cx>summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center}
 .cx>summary::-webkit-details-marker{display:none}
 .cx>summary:hover{background:var(--line2)}
-.cx .grades{display:flex;gap:4px;flex-wrap:wrap;min-width:64px;max-width:140px}
+.cx .grades{display:flex;gap:4px;flex-wrap:wrap;min-width:64px;max-width:170px;align-items:center}
+.g.off{opacity:.38}
+.g.T{background:var(--line2);color:var(--ink)}
+.cx .grades .sep{width:1px;height:16px;background:var(--line);margin:0 2px}
 .cats button{border:none;cursor:pointer;opacity:.35}
 .cats button.on{opacity:1;outline:2px solid currentColor;outline-offset:1px}
 .cx .name{font-weight:600;font-size:15px;letter-spacing:-.01em}
@@ -176,12 +179,13 @@ td.r,th.r{text-align:right}
   </div>
   <label class="chk"><input type="checkbox" id="stair"> 계단식만</label>
 
-  <div class="fh"><h3>업무지구 등급</h3><span class="small">A 강남역 · B 광화문역 · C 여의도역</span></div>
+  <div class="fh"><h3>업무지구 도달</h3><span class="small">A 강남역 · B 광화문역 · C 여의도역</span></div>
   <div class="f tiers">
     <div class="tier">도달 총소요 <input type="number" id="hubMax" min="10" max="120" aria-label="업무지구 도달 상한">분 이하</div>
   </div>
-  <div class="f"><label class="t"><span>보기</span><span class="small" id="vCats"></span></label><div class="gus cats" id="cats"></div></div>
-  <div class="small">한 단지가 여러 업무지구에 닿으면 등급을 모두 받는다(예: A-1 C-1). 총 소요 = 단지→역 도보 + 대기 3분 + 지하철(환승 4분). 아래 역 도보 상한 안의 역만 이용.</div>
+  <div class="f"><label class="t"><span>유형</span><span class="small" id="vTypes"></span></label><div class="gus cats" id="types"></div></div>
+  <div class="f"><label class="t"><span>면적 구분</span><span class="small" id="vTiers"></span></label><div class="gus cats" id="tiers"></div></div>
+  <div class="small">표기는 업무지구별 총 소요(분). 예) A-37 B-25 C-39. 유형을 고르면 그 업무지구에 상한 안으로 닿는 단지만 보이고, 여러 개 고르면 모두 닿아야 한다. 총 소요 = 단지→역 도보 + 대기 3분 + 지하철(환승 4분), 아래 역 도보 상한 안의 역만 이용.</div>
 
   <div class="fh"><h3>입지</h3></div>
   <div class="f"><label class="t"><span>지하철역 도보</span><span class="v" id="vWalk"></span></label><input type="range" id="walk" min="3" max="20" step="1"></div>
@@ -219,7 +223,7 @@ td.r,th.r{text-align:right}
   <details class="note"><summary>조건·계산 방법</summary>
     <dl>
       <dt>수집 범위</dt><dd id="noteScope"></dd>
-      <dt>등급 표기</dt><dd>문자 = 도달 가능한 업무지구: A 강남역 · B 광화문역 · C 여의도역 (총 소요가 "도달 총소요" 상한 이하, 기본 49분). 한 단지가 여러 곳에 닿으면 등급을 모두 받는다. 숫자 = 전용면적: -1 84㎡ 이상 · -2 59㎡ 이상 84㎡ 미만(기준 조정 가능). 예) A-1 = 강남역 도달 + 전용 84㎡ 이상, A-1 C-2 = 강남역·여의도역 도달, 59~84㎡.</dd>
+      <dt>등급 표기</dt><dd>단지마다 A-분 B-분 C-분 으로 적는다. A 강남역 · B 광화문역 · C 여의도역까지의 총 소요(분)이며, "도달 총소요" 상한(기본 49분) 안이면 진하게, 넘으면 흐리게 표시한다. 면적 구분은 매물별로 -1(전용 84㎡ 이상) · -2(59㎡ 이상 84㎡ 미만). 예) A-37 B-25 C-39 단지의 84㎡ 매물 = A-37 B-25 C-39 · -1.</dd>
       <dt>총 소요</dt><dd>단지→역 도보(직선×1.25÷80m) + 대기 3분 + 지하철(정차 0.8분 + 역간 km당 1.2분 + 환승 4분, 급행 포함·KTX/SRT 제외). 역 도보 상한 안의 역 중 가장 빠른 역을 택한다. 인접역 하차 후 도보는 인정하지 않고 정확히 그 역 도착 기준.</dd>
       <dt>초등학교</dt><dd>네이버부동산의 배정 초등학교와 도보시간. 배정정보가 없으면 OSM 최근접 초등학교 직선거리로 추정.</dd>
       <dt>중학교</dt><dd>배정 정보가 없어(학군 추첨) OSM 최근접 중학교 직선거리×1.25÷80m로 추정. 누락 학교가 있을 수 있음.</dd>
@@ -245,9 +249,9 @@ td.r,th.r{text-align:right}
 (function(){
 'use strict';
 const HUB3=['강남역','광화문역','여의도역'], HUBW=['시청·광화문','강남','여의도'];
-const CATS=['A-1','A-2','B-1','B-2','C-1','C-2'];
+const TYPES=['A','B','C']; const TIERS=['1','2'];
 const HUBL={'강남역':'A','광화문역':'B','여의도역':'C'};
-const DEF={pmin:50000,pmax:120000,amin:59,amax:200,t1:84,t2:59,room:3,bath:2,stair:true,hubMax:49,cats:CATS.slice(),walk:14,elem:8,mid:8,green:true,hh:400,age:15,gus:[],showEmpty:false,sort:'grade'};
+const DEF={pmin:50000,pmax:120000,amin:59,amax:200,t1:84,t2:59,room:3,bath:2,stair:true,hubMax:49,types:[],tiers:['1','2'],walk:14,elem:8,mid:8,green:true,hh:400,age:15,gus:[],showEmpty:false,sort:'grade'};
 const GUS_SEOUL=['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
 let GUS_GG=[];
 let S=Object.assign({},DEF), DATA=null, VIEW=[], SHOWN=0, PAGE=60;
@@ -266,9 +270,11 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 /* ---------- 조건 UI ---------- */
 function syncUI(){
   ['pmin','pmax','amin','amax','t1','t2','room','bath','hubMax','walk','elem','mid','hh','age'].forEach(k=>{$(k).value=S[k];});
-  if(!Array.isArray(S.cats)) S.cats=CATS.slice();
-  document.querySelectorAll('#cats button').forEach(b=>b.classList.toggle('on',S.cats.includes(b.dataset.cat)));
-  $('vCats').textContent=S.cats.length===CATS.length?'전체':(S.cats.join(' ')||'없음');
+  if(!Array.isArray(S.types)) S.types=[]; if(!Array.isArray(S.tiers)) S.tiers=['1','2'];
+  document.querySelectorAll('#types button').forEach(b=>b.classList.toggle('on',S.types.includes(b.dataset.t)));
+  document.querySelectorAll('#tiers button').forEach(b=>b.classList.toggle('on',S.tiers.includes(b.dataset.t)));
+  $('vTypes').textContent=S.types.length? S.types.map(L=>L+' '+{A:'강남',B:'광화문',C:'여의도'}[L]).join(' + ')+' 모두 도달' : '아무 곳이나 도달';
+  $('vTiers').textContent=S.tiers.length===2?'전체':(S.tiers.map(t=>'-'+t).join(' ')||'없음');
   ['stair','green','showEmpty'].forEach(k=>{$(k).checked=!!S[k];});
   $('sort').value=S.sort;
   $('vPrice').textContent=won(S.pmin)+' ~ '+won(S.pmax);
@@ -296,7 +302,9 @@ function bind(){
   ['room','bath','walk','elem','mid','hh','age'].forEach(k=>rng(k));
   ['t1','t2','hubMax'].forEach(k=>{$(k).addEventListener('change',e=>{const v=+e.target.value; if(isFinite(v)&&v>0){S[k]=v;} syncUI(); apply();});});
   ['stair','green','showEmpty'].forEach(k=>{$(k).addEventListener('change',e=>{S[k]=e.target.checked; apply();});});
-  const cb=$('cats'); CATS.forEach(cat=>{const b=document.createElement('button'); b.type='button'; b.className='g '+cat[0]; b.textContent=cat; b.dataset.cat=cat; b.addEventListener('click',()=>{const i=S.cats.indexOf(cat); if(i<0) S.cats.push(cat); else S.cats.splice(i,1); syncUI(); apply();}); cb.appendChild(b);});
+  const mk=(box,list,arr,label,cls)=>{const el=$(box); list.forEach(v=>{const b=document.createElement('button'); b.type='button'; b.className='g '+cls(v); b.textContent=label(v); b.dataset.t=v; b.addEventListener('click',()=>{const a=S[arr]; const i=a.indexOf(v); if(i<0) a.push(v); else a.splice(i,1); syncUI(); apply();}); el.appendChild(b);});};
+  mk('types',TYPES,'types',v=>v+' '+{A:'강남',B:'광화문',C:'여의도'}[v],v=>v);
+  mk('tiers',TIERS,'tiers',v=>'-'+v+' '+(v==='1'?'84㎡+':'59㎡+'),v=>'T');
   $('sort').addEventListener('change',e=>{S.sort=e.target.value; apply();});
   renderGus();
   $('btnReset').addEventListener('click',()=>{S=Object.assign({},DEF,{gus:[]}); syncUI(); apply(); toast('처음 조건으로 되돌렸습니다');});
@@ -322,6 +330,7 @@ function evalComplex(c){
   const t3={}; const letters=[]; let mx=null;
   for(const h of HUB3){const t=hubTime(c,h); t3[h]=t; if(t!=null&&t<=S.hubMax){ letters.push(HUBL[h]); mx=mx==null?t:Math.min(mx,t); }}
   if(!letters.length) return null;
+  if(S.types.length&&!S.types.every(L=>letters.includes(L))) return null;
   const g=letters.join('');
   const arts=[]; const tiers=new Set(); let lo=null,hi=null,lo1=null;
   for(const a of c.ar){
@@ -331,8 +340,8 @@ function evalComplex(c){
     const t=areaTier(ex); if(!t) continue;
     if(S.stair&&a[3]!=='계단식') continue;
     if((a[4]==null||a[4]<S.room)||(a[5]==null||a[5]<S.bath)) continue;
-    const cats=letters.map(L=>L+'-'+t).filter(x=>S.cats.includes(x)); if(!cats.length) continue;
-    arts.push({a,grade:cats.join(' '),cats,tier:t}); cats.forEach(x=>tiers.add(x));
+    if(!S.tiers.includes(t)) continue;
+    arts.push({a,grade:'-'+t,tier:t}); tiers.add('-'+t);
     lo=lo==null?p:Math.min(lo,p); hi=hi==null?p:Math.max(hi,p); if(t==='1') lo1=lo1==null?p:Math.min(lo1,p);
   }
   if(!arts.length&&!S.showEmpty) return null;
@@ -344,9 +353,8 @@ function evalComplex(c){
 function apply(){
   persist(); if(!DATA) return;
   VIEW=[]; for(const c of DATA.cx){const r=evalComplex(c); if(r) VIEW.push(r);}
-  const key=r=>(r.tiers[0]||r.g+'-9');
   const sorters={
-    grade:(x,y)=>key(x).localeCompare(key(y))||y.letters.length-x.letters.length||x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
+    grade:(x,y)=>y.letters.length-x.letters.length||x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
     price:(x,y)=>(x.lo??1e9)-(y.lo??1e9)||x.mx-y.mx,
     hub:(x,y)=>x.mx-y.mx||(x.lo??1e9)-(y.lo??1e9),
     walk:(x,y)=>x.st[0][1]-y.st[0][1]||x.mx-y.mx,
@@ -360,14 +368,14 @@ function apply(){
 function renderSummary(){
   const nArt=VIEW.reduce((s,r)=>s+r.arts.length,0);
   const byG={A:0,B:0,C:0}; VIEW.forEach(r=>{if(r.arts.length) r.letters.forEach(L=>byG[L]++);});
-  const byT={}; VIEW.forEach(r=>r.arts.forEach(x=>x.cats.forEach(k=>{byT[k]=(byT[k]||0)+1;})));
+  const byT={}; VIEW.forEach(r=>r.arts.forEach(x=>{byT[x.grade]=(byT[x.grade]||0)+1;}));
   const gu={}; VIEW.forEach(r=>{gu[r.c.gu]=(gu[r.c.gu]||0)+r.arts.length;});
   const topGu=Object.entries(gu).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([g,n])=>g.replace('구','')+' '+n).join(' · ');
-  const tierTxt=Object.keys(byT).sort().map(k=>k+' '+byT[k]).join(' · ')||'-';
+  const tierTxt=Object.keys(byT).sort().map(k=>k+' ('+(k==='-1'?'84㎡+':'59㎡+')+') '+byT[k]+'건').join(' · ')||'-';
   $('summary').innerHTML=
     tile('조건 충족 단지',VIEW.length,'개')+tile('매물(동일매물 묶음)',nArt,'건')+
-    `<div class="tile"><div class="k">업무지구별 단지</div><div class="n" style="font-size:15px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span class="g A">A 강남 ${byG.A}</span><span class="g B">B 광화문 ${byG.B}</span><span class="g C">C 여의도 ${byG.C}</span></div></div>`+
-    `<div class="tile"><div class="k">구분별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
+    `<div class="tile"><div class="k">도달 업무지구별 단지</div><div class="n" style="font-size:15px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px"><span class="g A">A 강남 ${byG.A}</span><span class="g B">B 광화문 ${byG.B}</span><span class="g C">C 여의도 ${byG.C}</span></div></div>`+
+    `<div class="tile"><div class="k">면적 구분별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
     `<div class="tile"><div class="k">구별 매물(상위)</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(topGu||'-')}</div></div>`;
   $('countTxt').textContent=VIEW.length? `${VIEW.length}개 단지 · ${nArt}건 (전체 수집 ${DATA.n_all.toLocaleString()}단지 중)` : '조건에 맞는 매물이 없습니다';
 }
@@ -380,10 +388,11 @@ function renderList(reset){
   for(let i=SHOWN;i<end;i++){const r=VIEW[i]; const d=document.createElement('details'); d.className='cx'; d.dataset.i=i; d.innerHTML=card(r)+'<div class="det"></div>'; frag.appendChild(d);}
   L.appendChild(frag); SHOWN=end; $('btnMore').hidden=SHOWN>=VIEW.length; $('btnMore').textContent=`더 보기 (${SHOWN}/${VIEW.length})`;
 }
-function gpill(t){return `<span class="g ${t[0]}">${t}</span>`;}
+function gpill(t){return `<span class="g T">${t}</span>`;}
+function hpill(r){return HUB3.map(h=>{const L=HUBL[h], t=r.t3[h]; const ok=t!=null&&t<=S.hubMax; return `<span class="g ${L}${ok?'':' off'}" title="${h}까지 총 소요">${L}-${t==null?'–':t}</span>`;}).join('');}
 function card(r){
   const c=r.c, s0=r.st[0];
-  const grades=r.tiers.length? r.tiers.map(gpill).join('') : r.letters.map(L=>`<span class="g ${L}">${L}</span>`).join('');
+  const grades=hpill(r)+(r.tiers.length?'<span class="sep"></span>'+r.tiers.map(gpill).join(''):'');
   const sch=(r.ew<99?`초등 <b>${r.ew}분</b>`:'초등 정보없음')+' · '+(r.mw<99?`중학 <b>${r.mw}분</b>`:'중학 정보없음');
   return `<summary>
     <div class="grades">${grades}</div>
@@ -391,7 +400,6 @@ function card(r){
     <div class="price">${r.arts.length? `<div class="p">${won(r.lo)}${r.hi>r.lo?' ~':''}</div><div class="c">${r.arts.length}건${r.hi>r.lo?' · 최고 '+won(r.hi):''}</div>` : '<div class="c">조건 매물 없음</div>'}</div>
     <div class="meta">
       <span><b>${esc(s0[0])}역</b> ${s0[1]}분${s0[2]?' ('+esc(s0[2])+')':''}${r.lines.length>=2?' · '+(r.lines.length>=3?'트리플':'더블')+'역세권':''}</span>
-      <span>${HUB3.map(h=>{const t=r.t3[h]; const ok=t!=null&&t<=S.hubMax; return (ok?'<b>':'')+h.replace('역','')+' '+(t==null?'-':t)+(ok?'</b>':'');}).join(' · ')}분</span>
       <span>${sch}</span>
       <span>녹지 <b>${esc(c.gr)}</b></span>
       <span>${ymTxt(c.ym)} 입주 (<b>${r.age.toFixed(1)}년</b>) · <b>${c.hh.toLocaleString()}</b>세대</span>
@@ -416,8 +424,8 @@ function detail(r){
   const kvh='<div class="kv">'+kv.map(([k,v])=>`<div><span>${k}</span><span>${k==='네이버부동산'?v:esc(v)}</span></div>`).join('')+'</div>';
   let rows='';
   if(r.arts.length){
-    rows='<div class="tw"><table><thead><tr><th>구분</th><th class="r">가격</th><th class="r">전용㎡</th><th class="r">전용평</th><th class="r">공급㎡</th><th>타입</th><th>방/욕</th><th>현관</th><th>층</th><th>동</th><th>향</th><th>확인일</th><th class="r">동일매물</th><th>특징</th><th>중개사</th><th></th></tr></thead><tbody>'+
-      r.arts.map(x=>{const a=x.a; return `<tr><td style="white-space:nowrap">${x.cats.map(gpill).join(' ')}</td><td class="r num">${won(a[0])}</td><td class="r num">${a[1]}</td><td class="r num">${(a[1]/3.3058).toFixed(1)}</td><td class="r num">${a[2]??''}</td><td>${esc(a[6])}</td><td class="num">${a[4]??'-'}/${a[5]??'-'}</td><td>${esc(a[3])}</td><td class="num">${esc(a[7])}</td><td>${esc(a[8])}</td><td>${esc(a[9])}</td><td class="num">${a[10]?a[10].slice(4,6)+'/'+a[10].slice(6,8):''}</td><td class="r num">${(a[14]||1)>1?'×'+a[14]:''}</td><td class="wrap">${esc(a[11])}</td><td>${esc(a[12])}</td><td>${a[13]?`<a href="https://new.land.naver.com/complexes/${c.no}?articleNo=${a[13]}" target="_blank" rel="noopener">매물</a>`:''}</td></tr>`;}).join('')+
+    rows='<div class="tw"><table><thead><tr><th>면적구분</th><th class="r">가격</th><th class="r">전용㎡</th><th class="r">전용평</th><th class="r">공급㎡</th><th>타입</th><th>방/욕</th><th>현관</th><th>층</th><th>동</th><th>향</th><th>확인일</th><th class="r">동일매물</th><th>특징</th><th>중개사</th><th></th></tr></thead><tbody>'+
+      r.arts.map(x=>{const a=x.a; return `<tr><td style="white-space:nowrap">${gpill(x.grade)}</td><td class="r num">${won(a[0])}</td><td class="r num">${a[1]}</td><td class="r num">${(a[1]/3.3058).toFixed(1)}</td><td class="r num">${a[2]??''}</td><td>${esc(a[6])}</td><td class="num">${a[4]??'-'}/${a[5]??'-'}</td><td>${esc(a[3])}</td><td class="num">${esc(a[7])}</td><td>${esc(a[8])}</td><td>${esc(a[9])}</td><td class="num">${a[10]?a[10].slice(4,6)+'/'+a[10].slice(6,8):''}</td><td class="r num">${(a[14]||1)>1?'×'+a[14]:''}</td><td class="wrap">${esc(a[11])}</td><td>${esc(a[12])}</td><td>${a[13]?`<a href="https://new.land.naver.com/complexes/${c.no}?articleNo=${a[13]}" target="_blank" rel="noopener">매물</a>`:''}</td></tr>`;}).join('')+
       '</tbody></table></div>';
   } else rows='<div class="small">현재 조건에 맞는 매물이 없습니다. (이 단지 수집 매물 '+c.ar.length+'건)</div>';
   return kvh+rows;
