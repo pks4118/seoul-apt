@@ -229,7 +229,7 @@ td.r,th.r{text-align:right}
       <dt>초등학교</dt><dd>네이버부동산의 배정 초등학교와 도보시간. 배정정보가 없으면 OSM 최근접 초등학교 직선거리로 추정.</dd>
       <dt>중학교</dt><dd>배정 정보가 없어(학군 추첨) OSM 최근접 중학교 직선거리×1.25÷80m로 추정. 누락 학교가 있을 수 있음.</dd>
       <dt>녹지</dt><dd>우수 = 300m 안 근린공원(5천㎡+) 또는 500m 안 대형녹지(10만㎡+). 양호 = 500m 안 근린공원 또는 1km 안 대형녹지. 규모는 OSM 외곽사각형 면적(과대 추정 가능).</dd>
-      <dt>매물</dt><dd>네이버부동산 매매 등록분(15억 이하 수집). 전용면적은 단지 평형표의 정확값으로 보정(네이버 매물은 정수로 잘림). 방·욕실·현관구조는 그 평형의 등록값. 동일 물건 중복 등록 가능. 실제 거래 가능 여부·가격은 중개사 확인 필요.</dd>
+      <dt>매물</dt><dd>네이버부동산 매매 등록분(15억 이하 수집). 같은 가격·전용·층·동·향으로 여러 중개사가 올린 건은 한 건으로 묶고 [동일매물] 열에 ×n 으로 표시(네이버 동일매물 묶기와 같은 기준). 전용면적은 단지 평형표의 정확값으로 보정(네이버 매물은 정수로 잘림). 방·욕실·현관구조는 그 평형의 등록값. 동일 물건 중복 등록 가능. 실제 거래 가능 여부·가격은 중개사 확인 필요.</dd>
       <dt>표시 원칙</dt><dd>조건에 맞는 매물이 지금 있는 단지만 보인다(체크박스로 해제 가능). 도보·소요시간은 모두 추정치이며 경계선상 물건은 지도로 확인할 것.</dd>
       <dt>업데이트</dt><dd>"새로고침"은 지금 화면에 보이는 단지들의 매물을 사무실 PC가 네이버에서 다시 받아 암호화·게시하고, 이 페이지가 자동으로 반영한다(보통 1~2분). "전체 재수집"은 서울 전체 단지를 다시 받는다(약 50분, 15분에 한 번). 그 밖에 매일 05:30 자동 전체 수집이 있다. 사무실 PC가 꺼져 있으면 마지막 게시 자료만 다시 읽는다. 시각은 상단 "자료 기준"에 표시된다.</dd>
     </dl>
@@ -364,7 +364,7 @@ function renderSummary(){
   const topGu=Object.entries(gu).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([g,n])=>g.replace('구','')+' '+n).join(' · ');
   const tierTxt=Object.keys(byT).sort().map(k=>k+' '+byT[k]).join(' · ')||'-';
   $('summary').innerHTML=
-    tile('조건 충족 단지',VIEW.length,'개')+tile('매물',nArt,'건')+
+    tile('조건 충족 단지',VIEW.length,'개')+tile('매물(동일매물 묶음)',nArt,'건')+
     `<div class="tile"><div class="k">3역 등급별 단지</div><div class="n" style="font-size:15px;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="g A">A ${byG.A}</span><span class="g B">B ${byG.B}</span><span class="g C">C ${byG.C}</span><span class="g D">D ${byG.D}</span></div></div>`+
     `<div class="tile"><div class="k">등급별 매물</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(tierTxt)}</div></div>`+
     `<div class="tile"><div class="k">구별 매물(상위)</div><div class="n" style="font-size:13px;margin-top:6px;line-height:1.5">${esc(topGu||'-')}</div></div>`;
@@ -415,8 +415,8 @@ function detail(r){
   const kvh='<div class="kv">'+kv.map(([k,v])=>`<div><span>${k}</span><span>${k==='네이버부동산'?v:esc(v)}</span></div>`).join('')+'</div>';
   let rows='';
   if(r.arts.length){
-    rows='<div class="tw"><table><thead><tr><th>등급</th><th class="r">가격</th><th class="r">전용㎡</th><th class="r">전용평</th><th class="r">공급㎡</th><th>타입</th><th>방/욕</th><th>현관</th><th>층</th><th>동</th><th>향</th><th>확인일</th><th>특징</th><th>중개사</th><th></th></tr></thead><tbody>'+
-      r.arts.map(x=>{const a=x.a; return `<tr><td>${gpill(x.grade)}</td><td class="r num">${won(a[0])}</td><td class="r num">${a[1]}</td><td class="r num">${(a[1]/3.3058).toFixed(1)}</td><td class="r num">${a[2]??''}</td><td>${esc(a[6])}</td><td class="num">${a[4]??'-'}/${a[5]??'-'}</td><td>${esc(a[3])}</td><td class="num">${esc(a[7])}</td><td>${esc(a[8])}</td><td>${esc(a[9])}</td><td class="num">${a[10]?a[10].slice(4,6)+'/'+a[10].slice(6,8):''}</td><td class="wrap">${esc(a[11])}</td><td>${esc(a[12])}</td><td>${a[13]?`<a href="https://new.land.naver.com/complexes/${c.no}?articleNo=${a[13]}" target="_blank" rel="noopener">매물</a>`:''}</td></tr>`;}).join('')+
+    rows='<div class="tw"><table><thead><tr><th>등급</th><th class="r">가격</th><th class="r">전용㎡</th><th class="r">전용평</th><th class="r">공급㎡</th><th>타입</th><th>방/욕</th><th>현관</th><th>층</th><th>동</th><th>향</th><th>확인일</th><th class="r">동일매물</th><th>특징</th><th>중개사</th><th></th></tr></thead><tbody>'+
+      r.arts.map(x=>{const a=x.a; return `<tr><td>${gpill(x.grade)}</td><td class="r num">${won(a[0])}</td><td class="r num">${a[1]}</td><td class="r num">${(a[1]/3.3058).toFixed(1)}</td><td class="r num">${a[2]??''}</td><td>${esc(a[6])}</td><td class="num">${a[4]??'-'}/${a[5]??'-'}</td><td>${esc(a[3])}</td><td class="num">${esc(a[7])}</td><td>${esc(a[8])}</td><td>${esc(a[9])}</td><td class="num">${a[10]?a[10].slice(4,6)+'/'+a[10].slice(6,8):''}</td><td class="r num">${(a[14]||1)>1?'×'+a[14]:''}</td><td class="wrap">${esc(a[11])}</td><td>${esc(a[12])}</td><td>${a[13]?`<a href="https://new.land.naver.com/complexes/${c.no}?articleNo=${a[13]}" target="_blank" rel="noopener">매물</a>`:''}</td></tr>`;}).join('')+
       '</tbody></table></div>';
   } else rows='<div class="small">현재 조건에 맞는 매물이 없습니다. (이 단지 수집 매물 '+c.ar.length+'건)</div>';
   return kvh+rows;
